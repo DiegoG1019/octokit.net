@@ -229,6 +229,62 @@ namespace Octokit
         /// </summary>
         /// <param name="uri">URI endpoint to send request to</param>
         /// <param name="parameters">Querystring parameters for the request</param>
+        /// <param name="accepts">Accept header to use for the API request</param>
+        /// <returns><seealso cref="IResponse"/> representing the received HTTP response</returns>
+        /// <remarks>The <see cref="IResponse.Body"/> property will be <c>null</c> if the <paramref name="uri"/> points to a directory instead of a file</remarks>
+        public Task<IApiResponse<byte[]>> GetRaw(Uri uri, IDictionary<string, string> parameters, string accepts)
+        {
+            Ensure.ArgumentNotNull(uri, nameof(uri));
+
+            var req = new Request
+            {
+                Method = HttpMethod.Get,
+                BaseAddress = BaseAddress,
+                Endpoint = uri.ApplyParameters(parameters),
+            };
+            req.Headers.Add("Accept", accepts);
+
+            return GetRaw(req);
+        }
+
+        /// <inheritdoc/>
+        public Task<IApiResponse<byte[]>> GetRaw(Uri uri, IDictionary<string, string> parameters, TimeSpan timeout, string accepts)
+        {
+            Ensure.ArgumentNotNull(uri, nameof(uri));
+
+            var req = new Request
+            {
+                Method = HttpMethod.Get,
+                BaseAddress = BaseAddress,
+                Endpoint = uri.ApplyParameters(parameters),
+                Timeout = timeout
+            };
+            req.Headers.Add("Accept", accepts);
+
+            return GetRaw(req);
+        }
+
+        /// <inheritdoc/>
+        public Task<IApiResponse<Stream>> GetRawStream(Uri uri, IDictionary<string, string> parameters, string accepts)
+        {
+            Ensure.ArgumentNotNull(uri, nameof(uri));
+
+            var req = new Request
+            {
+                Method = HttpMethod.Get,
+                BaseAddress = BaseAddress,
+                Endpoint = uri.ApplyParameters(parameters)
+            };
+            req.Headers.Add("Accept", accepts);
+
+            return GetRawStream(req);
+        }
+
+        /// <summary>
+        /// Performs an asynchronous HTTP GET request that expects a <seealso cref="IResponse"/> containing raw data.
+        /// </summary>
+        /// <param name="uri">URI endpoint to send request to</param>
+        /// <param name="parameters">Querystring parameters for the request</param>
         /// <returns><seealso cref="IResponse"/> representing the received HTTP response</returns>
         /// <remarks>The <see cref="IResponse.Body"/> property will be <c>null</c> if the <paramref name="uri"/> points to a directory instead of a file</remarks>
         public Task<IApiResponse<byte[]>> GetRaw(Uri uri, IDictionary<string, string> parameters)
@@ -737,14 +793,16 @@ namespace Octokit
 
         async Task<IApiResponse<string>> GetHtml(IRequest request)
         {
-            request.Headers.Add("Accept", AcceptHeaders.StableVersionHtml);
+            if (request.Headers.ContainsKey("Accept") is false)
+                request.Headers.Add("Accept", AcceptHeaders.StableVersionHtml);
             var response = await RunRequest(request, CancellationToken.None).ConfigureAwait(false);
             return new ApiResponse<string>(response, response.Body as string);
         }
 
         async Task<IApiResponse<byte[]>> GetRaw(IRequest request)
         {
-            request.Headers.Add("Accept", AcceptHeaders.RawContentMediaType);
+            if (request.Headers.ContainsKey("Accept") is false)
+                request.Headers.Add("Accept", AcceptHeaders.RawContentMediaType);
             var response = await RunRequest(request, CancellationToken.None).ConfigureAwait(false);
 
             if (response.Body is Stream stream)
@@ -757,7 +815,8 @@ namespace Octokit
         
         async Task<IApiResponse<Stream>> GetRawStream(IRequest request)
         {
-            request.Headers.Add("Accept", AcceptHeaders.RawContentMediaType);
+            if (request.Headers.ContainsKey("Accept") is false)
+                request.Headers.Add("Accept", AcceptHeaders.RawContentMediaType);
             var response = await RunRequest(request, CancellationToken.None).ConfigureAwait(false);
             
             return new ApiResponse<Stream>(response, response.Body as Stream);

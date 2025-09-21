@@ -129,6 +129,31 @@ namespace Octokit
         /// Gets the raw content of the API resource at the specified URI.
         /// </summary>
         /// <param name="uri">URI of the API resource to get</param>
+        /// <param name="accepts">Accept header to use for the API request</param>
+        /// <param name="parameters">Parameters to add to the API request</param>
+        /// <returns>The API resource's raw content or <c>null</c> if the <paramref name="uri"/> points to a directory.</returns>
+        /// <exception cref="ApiException">Thrown when an API error occurs.</exception>
+        public async Task<byte[]> GetRaw(Uri uri, IDictionary<string, string> parameters, string accepts)
+        {
+            Ensure.ArgumentNotNull(uri, nameof(uri));
+
+            var response = await Connection.GetRaw(uri, parameters, accepts).ConfigureAwait(false);
+            return response.Body;
+        }
+
+        /// <inheritdoc/>
+        public async Task<Stream> GetRawStream(Uri uri, IDictionary<string, string> parameters, string accepts)
+        {
+            Ensure.ArgumentNotNull(uri, nameof(uri));
+
+            var response = await Connection.GetRawStream(uri, parameters, accepts).ConfigureAwait(false);
+            return response.Body;
+        }
+
+        /// <summary>
+        /// Gets the raw content of the API resource at the specified URI.
+        /// </summary>
+        /// <param name="uri">URI of the API resource to get</param>
         /// <param name="parameters">Parameters to add to the API request</param>
         /// <returns>The API resource's raw content or <c>null</c> if the <paramref name="uri"/> points to a directory.</returns>
         /// <exception cref="ApiException">Thrown when an API error occurs.</exception>
