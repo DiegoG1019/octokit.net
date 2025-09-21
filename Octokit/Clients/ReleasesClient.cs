@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
+using System.IO;
+using System;
 
 namespace Octokit
 {
@@ -499,6 +501,37 @@ namespace Octokit
         {
             var endpoint = ApiUrls.Asset(repositoryId, assetId);
             return ApiConnection.Get<ReleaseAsset>(endpoint);
+        }
+
+        /// <summary>
+        /// Gets a raw read-only stream containing the file data for the specified asset
+        /// </summary>
+        /// <remarks>
+        /// See the <a href="http://developer.github.com/v3/repos/releases/#get-a-single-release-asset">API documentation</a> for more information.
+        /// </remarks>
+        /// <param name="repositoryId">The Id of the repository</param>
+        /// <param name="assetId">The id of the <see cref="ReleaseAsset"/></param>
+        [ManualRoute("GET", "/repositories/{id}/releases/assets/{asset_id}")]
+        public Task<Stream> DownloadAsset(long repositoryId, int assetId)
+        {
+            var endpoint = ApiUrls.Asset(repositoryId, assetId);
+            return ApiConnection.GetRawStream(endpoint, null, "application/octet-stream");
+        }
+
+        /// <summary>
+        /// Gets a raw read-only stream containing the file data for the specified asset
+        /// </summary>
+        /// <remarks>
+        /// See the <a href="http://developer.github.com/v3/repos/releases/#get-a-single-release-asset">API documentation</a> for more information.
+        /// </remarks>
+        /// <param name="owner">The repository's owner</param>
+        /// <param name="name">The repository's name</param>
+        /// <param name="assetId">The id of the <see cref="ReleaseAsset"/></param>
+        [ManualRoute("GET", "/repositories/{id}/releases/assets/{asset_id}")]
+        public Task<Stream> DownloadAsset(string owner, string name, int assetId)
+        {
+            var endpoint = ApiUrls.Asset(owner, name, assetId);
+            return ApiConnection.GetRawStream(endpoint, null, "application/octet-stream");
         }
 
         /// <summary>
